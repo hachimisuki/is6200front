@@ -1,103 +1,164 @@
+"use client";
+import { useEffect } from "react";
 import Image from "next/image";
-
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Package, Truck, User } from "lucide-react";
+import SenderDashboard from "@/components/SenderDashboard";
+import CourierDashboard from "@/components/CourierDashboard";
+import ReceiverDashboard from "@/components/ReceiverDashboard";
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState(null);
+  const [walletAddress, setWalletAddress] = useState("");
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
+  // 检查是否已连接钱包
+  useEffect(() => {
+    checkIfWalletIsConnected();
+  }, []);
+
+  const checkIfWalletIsConnected = async () => {
+    try {
+      // 检查浏览器是否有 Ethereum 对象 (MetaMask)
+      if (window.ethereum) {
+        const accounts = await window.ethereum.request({
+          method: "eth_accounts",
+        });
+
+        if (accounts.length > 0) {
+          setWalletAddress(accounts[0]);
+          setIsLoggedIn(true);
+        }
+      } else {
+        setError("请安装 MetaMask 钱包!");
+      }
+    } catch (error) {
+      console.error("连接钱包时出错:", error);
+    }
+  };
+
+  const handleLogin = async () => {
+    try {
+      if (window.ethereum) {
+        // 请求用户授权访问其 MetaMask 账户
+        const accounts = await window.ethereum.request({
+          method: "eth_requestAccounts",
+        });
+
+        // 获取用户的钱包地址
+        const account = accounts[0];
+        setWalletAddress(account);
+        setIsLoggedIn(true);
+        setError("");
+      } else {
+        setError("请安装 MetaMask 钱包!");
+      }
+    } catch (error) {
+      console.error("连接钱包时出错:", error);
+      if (error.code === 4001) {
+        // 用户拒绝了请求
+        setError("您拒绝了钱包连接请求。");
+      } else {
+        setError(`连接钱包时出错: ${error.message}`);
+      }
+    }
+  };
+  const handleRoleSelect = (role) => {
+    setUserRole(role);
+  };
+  const resetUserRole = () => {
+    setUserRole(null);
+  };
+  // const logoutWallet = async () => {
+  //   try {
+  //     // 清除应用程序中的状态
+  //     setWalletAddress("");
+  //     setIsLoggedIn(false);
+  //     setUserRole(null);
+
+  //     // 如果要尝试"忘记"这个站点连接
+  //     if (window.ethereum && window.ethereum._metamask) {
+  //       // 注意：这是非标准 API，可能在未来版本中变化或失效
+  //       try {
+  //         // 尝试调用 MetaMask 的内部方法断开当前站点
+  //         await window.ethereum._metamask.disconnect();
+  //         console.log("MetaMask 连接已断开");
+  //       } catch (err) {
+  //         console.log("无法通过 API 断开 MetaMask", err);
+  //       }
+  //     }
+
+  //   } catch (error) {
+  //     console.error("注销时出错:", error);
+  //   }
+  // };
+
+  if (!isLoggedIn) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <Card className="w-[350px]">
+          <CardHeader>
+            <CardTitle>登录</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={handleLogin} className="w-full bg-black">
+              使用钱包登录
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!userRole) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <Card className="w-[350px]">
+          <CardHeader>
+            <CardTitle>选择角色</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            <Button
+              onClick={() => handleRoleSelect("sender")}
+              className="w-full"
+            >
+              <Package className="mr-2 h-4 w-4" /> 发送者
+            </Button>
+            <Button
+              onClick={() => handleRoleSelect("courier")}
+              className="w-full"
+            >
+              <Truck className="mr-2 h-4 w-4" /> 快递员
+            </Button>
+            <Button
+              onClick={() => handleRoleSelect("receiver")}
+              className="w-full"
+            >
+              <User className="mr-2 h-4 w-4" /> 接收者
+            </Button>
+            {/* <Button onClick={() => logoutWallet()} className="w-full">
+              <User className="mr-2 h-4 w-4" /> 注销
+            </Button> */}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex h-screen bg-gray-100">
+      <main className="flex-1 p-8">
+        {userRole === "sender" && (
+          <SenderDashboard onRoleReset={resetUserRole} />
+        )}
+        {userRole === "courier" && (
+          <CourierDashboard onRoleReset={resetUserRole} />
+        )}
+        {userRole === "receiver" && (
+          <ReceiverDashboard onRoleReset={resetUserRole} />
+        )}
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
   );
 }
