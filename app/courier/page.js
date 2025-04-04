@@ -1,10 +1,14 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import CourierDashboard from "@/components/CourierDashboard";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Package, Truck, Edit, Trash2, ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function CourierPage() {
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState("create-order");
 
   // 检查用户是否已登录
   useEffect(() => {
@@ -34,11 +38,68 @@ export default function CourierPage() {
     router.push("/");
   };
 
+  const renderContent = () => {
+    switch (activeTab) {
+      case "create-order":
+        return <CreateOrder />;
+      case "accept-order":
+        return <AcceptOrder />;
+      case "modify-order":
+        return <ModifyOrder />;
+      case "delete-order":
+        return <DeleteOrder />;
+      default:
+        return <CreateOrder />;
+    }
+  };
+
   return (
     <div className="flex h-screen bg-gray-100">
       <main className="flex-1 p-8">
-        <CourierDashboard onRoleReset={handleRoleReset} />
+        <Card className="w-full">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>快递员面板</CardTitle>
+            <Button variant="ghost" onClick={handleRoleReset}>
+              <ArrowLeft className="mr-2 h-4 w-4" /> 返回选择身份
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList>
+                <TabsTrigger value="create-order">
+                  <Package className="mr-2 h-4 w-4" /> 创建订单
+                </TabsTrigger>
+                <TabsTrigger value="accept-order">
+                  <Truck className="mr-2 h-4 w-4" /> 接单
+                </TabsTrigger>
+                <TabsTrigger value="modify-order">
+                  <Edit className="mr-2 h-4 w-4" /> 修改订单
+                </TabsTrigger>
+                <TabsTrigger value="delete-order">
+                  <Trash2 className="mr-2 h-4 w-4" /> 删除订单
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value={activeTab}>{renderContent()}</TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
       </main>
     </div>
   );
+}
+
+function CreateOrder() {
+  return <div>创建订单（表示空闲时间）的内容</div>;
+}
+
+function AcceptOrder() {
+  return <div>接单的内容</div>;
+}
+
+function ModifyOrder() {
+  return <div>修改订单的内容</div>;
+}
+
+function DeleteOrder() {
+  return <div>删除订单的内容</div>;
 }
