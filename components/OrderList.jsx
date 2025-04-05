@@ -8,6 +8,14 @@ import {
   logistic_ABI2,
 } from "../utils/constants";
 import ModifyOrder from "./ModifyOrder";
+import {
+  takeOrder,
+  startDelivery,
+  deliverOrder,
+  cancelOrder,
+  getCourierOrders,
+  getAvailableOrders,
+} from "@/components/utils/courier-functions";
 
 const OrderList = ({ showAll = false }) => {
   const [loading, setLoading] = useState(false);
