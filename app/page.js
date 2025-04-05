@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Package, Truck, User, Check } from "lucide-react";
 import {
-  CONTRACT_ADDRESS,
   USER_MANAGEMENT_ADDRESS,
   logistic_ABI,
   userManagement_ABI,

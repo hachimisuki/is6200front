@@ -17,7 +17,7 @@ import {
   getAvailableOrders,
 } from "@/components/utils/courier-functions";
 
-const OrderList = ({ showAll = false }) => {
+const OrderList = ({ showAll = false, getTakedOrder = false }) => {
   const [loading, setLoading] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [orders, setOrders] = useState([
@@ -64,7 +64,10 @@ const OrderList = ({ showAll = false }) => {
       const ordersList = [];
       for (let i = 1; i <= totalOrders.toNumber(); i++) {
         const order = await contract.orderMap(i);
+
         if (
+          // showAll查询所有||查询当前发送者的订单
+          !getTakedOrder ||
           showAll ||
           order.senderAddr.toLowerCase() === userAddress.toLowerCase()
         ) {
@@ -77,6 +80,9 @@ const OrderList = ({ showAll = false }) => {
             ethAmount: ethers.utils.formatEther(order.ethAmount),
           });
         }
+        if (getTakedOrder) {
+          // todo 查询已接单的订单
+        }
       }
 
       setOrders(ordersList);
@@ -85,6 +91,18 @@ const OrderList = ({ showAll = false }) => {
     } finally {
       setLoading(false);
     }
+  };
+  // 开始运输
+  const startSend = async (orderId) => {
+    await startDelivery(orderId);
+    // 刷新订单列表
+    loadOrders();
+  };
+
+  // 货物送达
+  const deliverOk = async (orderId) => {
+    await deliverOrder(orderId);
+    loadOrders();
   };
 
   // 删除订单
@@ -206,8 +224,8 @@ const OrderList = ({ showAll = false }) => {
                       </Button>
                     </>
                   )}
-                  {/* 如果是外卖员 */}{" "}
-                  {showAll && (
+                  {/* 如果是外卖员查询所有可接单 */}{" "}
+                  {showAll && !getTakedOrder && (
                     <Button
                       size="sm"
                       onClick={() => handleAcceptOrder(order.id)}
@@ -216,6 +234,27 @@ const OrderList = ({ showAll = false }) => {
                     >
                       接单
                     </Button>
+                  )}
+                  {/* 如果时外卖员查询已接单 TODO 替换成 getTakedOrder*/}
+                  {true && (
+                    <>
+                      <Button
+                        size="sm"
+                        onClick={() => startSend(order.id)}
+                        className="mr-2"
+                        disabled={order.status !== 1}
+                      >
+                        开始运输
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => deliverOk(order.id)}
+                        className="mr-2"
+                        disabled={order.status !== 2}
+                      >
+                        货物送达
+                      </Button>
+                    </>
                   )}
                 </td>
               </tr>

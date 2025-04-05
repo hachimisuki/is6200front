@@ -9,7 +9,7 @@ import OrderList from "@/components/OrderList";
 
 export default function CourierPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState("create-order");
+  const [activeTab, setActiveTab] = useState("accept-order");
 
   // 检查用户是否已登录
   useEffect(() => {
@@ -52,34 +52,20 @@ export default function CourierPage() {
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList>
-                <TabsTrigger value="create-order">
-                  <Package className="mr-2 h-4 w-4" /> 创建订单
-                </TabsTrigger>
                 <TabsTrigger value="accept-order">
-                  <Truck className="mr-2 h-4 w-4" /> 接单
+                  <Truck className="mr-2 h-4 w-4" /> 可接订单
                 </TabsTrigger>
-                <TabsTrigger value="modify-order">
-                  <Edit className="mr-2 h-4 w-4" /> 修改订单
-                </TabsTrigger>
-                <TabsTrigger value="delete-order">
-                  <Trash2 className="mr-2 h-4 w-4" /> 删除订单
+                <TabsTrigger value="my-order">
+                  <Package className="mr-2 h-4 w-4" /> 已接订单
                 </TabsTrigger>
               </TabsList>
-
-              <TabsContent value="create-order">
-                <CreateOrder />
-              </TabsContent>
 
               <TabsContent value="accept-order">
                 <OrderList showAll={true} />
               </TabsContent>
 
-              <TabsContent value="modify-order">
-                <ModifyOrder />
-              </TabsContent>
-
-              <TabsContent value="delete-order">
-                <DeleteOrder />
+              <TabsContent value="my-order">
+                <OrderList getTakedOrder={true} />
               </TabsContent>
             </Tabs>
           </CardContent>
@@ -87,16 +73,4 @@ export default function CourierPage() {
       </main>
     </div>
   );
-}
-
-function CreateOrder() {
-  return <div>创建订单（表示空闲时间）的内容</div>;
-}
-
-function ModifyOrder() {
-  return <div>修改订单的内容</div>;
-}
-
-function DeleteOrder() {
-  return <div>删除订单的内容</div>;
 }

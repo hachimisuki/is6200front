@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import { CONTRACT_ADDRESS, logistic_ABI2 } from "@/utils/constants";
+import { LOGISTIC_ADDRESS, logistic_ABI2 } from "@/utils/constants";
 
 // 获取合约实例
 const getContract = async () => {
@@ -11,7 +11,7 @@ const getContract = async () => {
   await provider.send("eth_requestAccounts", []);
   const signer = provider.getSigner();
 
-  return new ethers.Contract(CONTRACT_ADDRESS, logistic_ABI2, signer);
+  return new ethers.Contract(LOGISTIC_ADDRESS, logistic_ABI2, signer);
 };
 
 /**
