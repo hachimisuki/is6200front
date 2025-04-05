@@ -691,3 +691,243 @@ export const logistic_ABI2 = [
     "type": "function",
   },
 ];
+export const userManagement_ABI = [
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "courierAddr",
+        "type": "address",
+      },
+    ],
+    "name": "CourierPenalized",
+    "type": "event",
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "courierAddr",
+        "type": "address",
+      },
+    ],
+    "name": "CourierRewarded",
+    "type": "event",
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "user",
+        "type": "address",
+      },
+      {
+        "indexed": false,
+        "internalType": "enum UserManagement.Role",
+        "name": "role",
+        "type": "uint8",
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "message",
+        "type": "string",
+      },
+    ],
+    "name": "UserRegistered",
+    "type": "event",
+  },
+  {
+    "inputs": [],
+    "name": "DEFAULT_REPUTATION",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8",
+      },
+    ],
+    "stateMutability": "view",
+    "type": "function",
+  },
+  {
+    "inputs": [],
+    "name": "MAX_REPUTATION",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8",
+      },
+    ],
+    "stateMutability": "view",
+    "type": "function",
+  },
+  {
+    "inputs": [],
+    "name": "MIN_REPUTATION",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8",
+      },
+    ],
+    "stateMutability": "view",
+    "type": "function",
+  },
+  {
+    "inputs": [],
+    "name": "PENALTY_VALUE",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8",
+      },
+    ],
+    "stateMutability": "view",
+    "type": "function",
+  },
+  {
+    "inputs": [],
+    "name": "REWARD_VALUE",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8",
+      },
+    ],
+    "stateMutability": "view",
+    "type": "function",
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address",
+      },
+    ],
+    "name": "courierReputation",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8",
+      },
+    ],
+    "stateMutability": "view",
+    "type": "function",
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address",
+      },
+    ],
+    "name": "isRegistered",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool",
+      },
+    ],
+    "stateMutability": "view",
+    "type": "function",
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_courierAddr",
+        "type": "address",
+      },
+    ],
+    "name": "penalizeCourier",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function",
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_courierAddr",
+        "type": "address",
+      },
+    ],
+    "name": "registerAsCourier",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function",
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_courierAddr",
+        "type": "address",
+      },
+    ],
+    "name": "registerAsReciever",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function",
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_courierAddr",
+        "type": "address",
+      },
+    ],
+    "name": "registerAsSender",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function",
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_courierAddr",
+        "type": "address",
+      },
+    ],
+    "name": "rewardCourier",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function",
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address",
+      },
+    ],
+    "name": "userRoles",
+    "outputs": [
+      {
+        "internalType": "enum UserManagement.Role",
+        "name": "",
+        "type": "uint8",
+      },
+    ],
+    "stateMutability": "view",
+    "type": "function",
+  },
+];
