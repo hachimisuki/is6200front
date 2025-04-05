@@ -7,32 +7,15 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { LOGISTIC_ADDRESS, logistic_ABI2 } from "@/utils/constants";
 
 export default function ReceiverPage() {
   const router = useRouter();
   const [rating, setRating] = useState("1"); // 默认好评
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
-
-  // 示例数据 - 实际应用中应该从智能合约获取
-  const [orders, setOrders] = useState([
-    {
-      id: 1,
-      courierAddr: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
-      senderLoc: "深水埗区青山道100号",
-      receiverLoc: "中环干诺道中50号",
-      status: 3, // Delivered
-      ethAmount: "0.05",
-    },
-    {
-      id: 2,
-      courierAddr: "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
-      senderLoc: "荃湾区德士古道88号",
-      receiverLoc: "旺角弥敦道200号",
-      status: 4, // Finished
-      ethAmount: "0.03",
-    },
-  ]);
+  const [orders, setOrders] = useState([]);
+  const [loadingOrders, setLoadingOrders] = useState(true);
 
   // 订单状态文本
   const statusText = [
@@ -58,6 +41,9 @@ export default function ReceiverPage() {
 
         if (accounts.length === 0) {
           router.push("/");
+        } else {
+          // 加载收货人订单
+          loadReceiverOrders(accounts[0]);
         }
       } catch (error) {
         console.error("验证身份时出错:", error);
@@ -65,6 +51,51 @@ export default function ReceiverPage() {
       }
     } else {
       router.push("/");
+    }
+  };
+
+  // 加载收货人的订单
+  const loadReceiverOrders = async (userAddress) => {
+    setLoadingOrders(true);
+    try {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+
+      // 创建合约实例
+      const contract = new ethers.Contract(
+        LOGISTIC_ADDRESS,
+        logistic_ABI2,
+        signer
+      );
+
+      // 获取订单总数
+      const totalOrderCount = await contract.totalOrderCount();
+
+      // 存储属于当前用户的订单
+      const myOrders = [];
+
+      // 遍历获取所有订单
+      for (let i = 1; i <= totalOrderCount; i++) {
+        const order = await contract.orderMap(i);
+
+        // 检查是否是当前用户的订单
+        if (order.receiverAddr.toLowerCase() === userAddress.toLowerCase()) {
+          myOrders.push({
+            id: order.orderID.toNumber(),
+            senderLoc: order.senderLoc,
+            receiverLoc: order.receiverLoc,
+            status: parseInt(order.status.toString()),
+            ethAmount: ethers.utils.formatEther(order.ethAmount),
+          });
+        }
+      }
+
+      setOrders(myOrders);
+    } catch (error) {
+      console.error("加载订单失败:", error);
+      setStatus("获取订单失败，请稍后再试");
+    } finally {
+      setLoadingOrders(false);
     }
   };
 
@@ -80,28 +111,9 @@ export default function ReceiverPage() {
       await provider.send("eth_requestAccounts", []);
       const signer = provider.getSigner();
 
-      // 合约地址需要替换为你实际部署的地址
-      const contractAddress = "0x你的合约地址";
-      const contractABI = [
-        {
-          inputs: [
-            { internalType: "uint256", name: "_orderID", type: "uint256" },
-            {
-              internalType: "enum LogisticsPlatform.OrderRating",
-              name: "_rating",
-              type: "uint8",
-            },
-          ],
-          name: "receiverOrder",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-      ];
-
       const contract = new ethers.Contract(
-        contractAddress,
-        contractABI,
+        LOGISTIC_ADDRESS,
+        logistic_ABI2,
         signer
       );
 
@@ -124,13 +136,27 @@ export default function ReceiverPage() {
       setStatus(`确认失败: ${err.message}`);
     } finally {
       setLoading(false);
-      // 2秒后清除状态消息
-      setTimeout(() => setStatus(""), 2000);
+      // 5秒后清除状态消息
+      setTimeout(() => setStatus(""), 5000);
     }
   };
 
   const handleRoleReset = () => {
     router.push("/");
+  };
+
+  // 手动刷新订单
+  const handleRefresh = async () => {
+    try {
+      const accounts = await window.ethereum.request({
+        method: "eth_accounts",
+      });
+      if (accounts.length > 0) {
+        loadReceiverOrders(accounts[0]);
+      }
+    } catch (error) {
+      console.error("刷新订单失败:", error);
+    }
   };
 
   return (
@@ -139,9 +165,18 @@ export default function ReceiverPage() {
         <Card className="w-full">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>接收者面板</CardTitle>
-            <Button variant="ghost" onClick={handleRoleReset}>
-              <ArrowLeft className="mr-2 h-4 w-4" /> 返回
-            </Button>
+            <div className="flex space-x-2">
+              <Button
+                variant="outline"
+                onClick={handleRefresh}
+                disabled={loadingOrders}
+              >
+                {loadingOrders ? "加载中..." : "刷新订单"}
+              </Button>
+              <Button variant="ghost" onClick={handleRoleReset}>
+                <ArrowLeft className="mr-2 h-4 w-4" /> 返回
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             <h2 className="text-xl font-bold mb-4">我的订单</h2>
@@ -152,7 +187,11 @@ export default function ReceiverPage() {
               </div>
             )}
 
-            {orders.length === 0 ? (
+            {loadingOrders ? (
+              <div className="text-center py-8">
+                <p>正在加载订单...</p>
+              </div>
+            ) : orders.length === 0 ? (
               <p className="text-center py-4">暂无订单</p>
             ) : (
               <div className="space-y-4">
@@ -161,6 +200,7 @@ export default function ReceiverPage() {
                     <div className="flex justify-between">
                       <div>
                         <h3 className="font-bold">订单 #{order.id}</h3>
+                        <p className="text-sm">发送地址: {order.senderLoc}</p>
                         <p className="text-sm">送货地址: {order.receiverLoc}</p>
                         <p className="text-sm">金额: {order.ethAmount} ETH</p>
                         <p className="text-sm">
@@ -231,7 +271,7 @@ export default function ReceiverPage() {
                             onClick={() => confirmReceive(order.id)}
                             disabled={loading}
                           >
-                            确认收货
+                            {loading ? "处理中..." : "确认收货"}
                           </Button>
                         </div>
                       )}
