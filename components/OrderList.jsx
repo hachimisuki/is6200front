@@ -1,10 +1,15 @@
+"use client";
 import { useState, useEffect } from "react";
 import { ethers } from "ethers";
 import { Button } from "@/components/ui/button";
-import { CONTRACT_ADDRESS } from "../utils/constants";
+import {
+  LOGISTIC_ADDRESS,
+  logistic_ABI,
+  logistic_ABI2,
+} from "../utils/constants";
 import ModifyOrder from "./ModifyOrder";
 
-const OrderList = () => {
+const OrderList = ({ showAll = false }) => {
   const [loading, setLoading] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [orders, setOrders] = useState([
@@ -25,7 +30,11 @@ const OrderList = () => {
       ethAmount: "0.03",
     },
   ]);
-
+  useEffect(() => {
+    // 检查用户是否已登录
+    loadOrders();
+    console.log("渲染了");
+  }, []);
   // 加载订单数据
   const loadOrders = async () => {
     setLoading(true);
@@ -35,43 +44,22 @@ const OrderList = () => {
       const signer = provider.getSigner();
       const userAddress = await signer.getAddress();
 
-      const contractAddress = CONTRACT_ADDRESS;
-      const contractABI = [
-        {
-          "inputs": [],
-          "name": "totalOrderCount",
-          "outputs": [{ "type": "uint256" }],
-          "stateMutability": "view",
-          "type": "function",
-        },
-        {
-          "inputs": [{ "type": "uint256" }],
-          "name": "orderMap",
-          "outputs": [
-            { "name": "orderID", "type": "uint256" },
-            { "name": "senderAddr", "type": "address" },
-            { "name": "receiverAddr", "type": "address" },
-            { "name": "senderLoc", "type": "string" },
-            { "name": "receiverLoc", "type": "string" },
-            { "name": "status", "type": "uint8" },
-            { "name": "ethAmount", "type": "uint256" },
-          ],
-          "stateMutability": "view",
-          "type": "function",
-        },
-      ];
+      const contractAddress = LOGISTIC_ADDRESS;
 
       const contract = new ethers.Contract(
         contractAddress,
-        contractABI,
+        logistic_ABI2,
         signer
       );
       const totalOrders = await contract.totalOrderCount();
-
+      console.log("Total Orders:", totalOrders);
       const ordersList = [];
       for (let i = 1; i <= totalOrders.toNumber(); i++) {
         const order = await contract.orderMap(i);
-        if (order.senderAddr.toLowerCase() === userAddress.toLowerCase()) {
+        if (
+          showAll ||
+          order.senderAddr.toLowerCase() === userAddress.toLowerCase()
+        ) {
           ordersList.push({
             id: order.orderID.toNumber(),
             receiverAddr: order.receiverAddr,
@@ -155,22 +143,38 @@ const OrderList = () => {
                   }
                 </td>
                 <td className="p-2">
-                  <Button
-                    size="sm"
-                    onClick={() => handleEdit(order)}
-                    className="mr-2"
-                    disabled={order.status !== 0}
-                  >
-                    修改
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => handleDelete(order.id)}
-                    disabled={order.status !== 0}
-                  >
-                    删除
-                  </Button>
+                  {/* 如果是用户 */}
+                  {!showAll && (
+                    <>
+                      <Button
+                        size="sm"
+                        onClick={() => handleEdit(order)}
+                        className="mr-2"
+                        disabled={order.status !== 0}
+                      >
+                        修改
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => handleDelete(order.id)}
+                        disabled={order.status !== 0}
+                      >
+                        删除
+                      </Button>
+                    </>
+                  )}
+                  {/* 如果是外卖员 */}{" "}
+                  {showAll && (
+                    <Button
+                      size="sm"
+                      onClick={() => handleEdit(order)}
+                      className="mr-2"
+                      disabled={order.status !== 0}
+                    >
+                      接单
+                    </Button>
+                  )}
                 </td>
               </tr>
             ))}

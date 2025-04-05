@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ethers } from "ethers";
-import { CONTRACT_ADDRESS } from "../utils/constants";
+import { LOGISTIC_ADDRESS } from "../utils/constants";
 
 const ModifyOrder = ({ order, onBack }) => {
   const [formData, setFormData] = useState({

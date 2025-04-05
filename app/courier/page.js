@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Package, Truck, Edit, Trash2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import OrderList from "@/components/OrderList";
 
 export default function CourierPage() {
   const router = useRouter();
@@ -38,21 +39,6 @@ export default function CourierPage() {
     router.push("/");
   };
 
-  const renderContent = () => {
-    switch (activeTab) {
-      case "create-order":
-        return <CreateOrder />;
-      case "accept-order":
-        return <AcceptOrder />;
-      case "modify-order":
-        return <ModifyOrder />;
-      case "delete-order":
-        return <DeleteOrder />;
-      default:
-        return <CreateOrder />;
-    }
-  };
-
   return (
     <div className="flex h-screen bg-gray-100">
       <main className="flex-1 p-8">
@@ -79,7 +65,22 @@ export default function CourierPage() {
                   <Trash2 className="mr-2 h-4 w-4" /> 删除订单
                 </TabsTrigger>
               </TabsList>
-              <TabsContent value={activeTab}>{renderContent()}</TabsContent>
+
+              <TabsContent value="create-order">
+                <CreateOrder />
+              </TabsContent>
+
+              <TabsContent value="accept-order">
+                <OrderList showAll={true} />
+              </TabsContent>
+
+              <TabsContent value="modify-order">
+                <ModifyOrder />
+              </TabsContent>
+
+              <TabsContent value="delete-order">
+                <DeleteOrder />
+              </TabsContent>
             </Tabs>
           </CardContent>
         </Card>
@@ -90,10 +91,6 @@ export default function CourierPage() {
 
 function CreateOrder() {
   return <div>创建订单（表示空闲时间）的内容</div>;
-}
-
-function AcceptOrder() {
-  return <div>接单的内容</div>;
 }
 
 function ModifyOrder() {

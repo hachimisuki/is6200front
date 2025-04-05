@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ethers } from "ethers";
 import { Button } from "@/components/ui/button";
-import { CONTRACT_ADDRESS } from "../utils/constants";
+import { LOGISTIC_ADDRESS } from "../utils/constants";
 import { logistic_ABI } from "../utils/constants";
 
 const CreateOrder = () => {
@@ -41,7 +41,7 @@ const CreateOrder = () => {
       const signer = provider.getSigner();
 
       // 物流平台合约地址
-      const contractAddress = CONTRACT_ADDRESS;
+      const contractAddress = LOGISTIC_ADDRESS;
       // 合约ABI
       const contractABI = logistic_ABI;
 

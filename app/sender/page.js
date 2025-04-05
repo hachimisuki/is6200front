@@ -51,7 +51,7 @@ export default function SenderPage() {
       case "create-order":
         return <CreateOrder />;
       case "orders":
-        return <OrderList />;
+        return <OrderList showAll={false} />;
       default:
         return <CreateOrder />;
     }
