@@ -90,6 +90,40 @@ const OrderList = ({ showAll = false }) => {
     setSelectedOrder(order);
   };
 
+  // 接单
+  const handleAcceptOrder = async (orderId) => {
+    try {
+      // 显示加载状态
+      setLoading(true);
+
+      // 连接以太坊
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      await provider.send("eth_requestAccounts", []);
+      const signer = provider.getSigner();
+
+      // 创建合约实例
+      const contract = new ethers.Contract(
+        LOGISTIC_ADDRESS,
+        logistic_ABI2,
+        signer
+      );
+
+      // 调用合约的takeOrder函数
+      const tx = await contract.takeOrder(orderId);
+
+      // 等待交易确认
+      await tx.wait();
+
+      // 刷新订单列表
+      loadOrders();
+    } catch (error) {
+      console.error("接单失败:", error);
+      alert(`接单失败: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // 返回订单列表
   const handleBackToList = () => {
     setSelectedOrder(null);
@@ -168,7 +202,7 @@ const OrderList = ({ showAll = false }) => {
                   {showAll && (
                     <Button
                       size="sm"
-                      onClick={() => handleEdit(order)}
+                      onClick={() => handleAcceptOrder(order.id)}
                       className="mr-2"
                       disabled={order.status !== 0}
                     >
