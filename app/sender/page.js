@@ -14,13 +14,13 @@ export default function SenderPage() {
   const [activeTab, setActiveTab] = useState("create-order");
   const [walletAddress, setWalletAddress] = useState("");
 
-  // 检查用户是否已登录
+  // Check if the user is logged in
   useEffect(() => {
     checkAuth();
   }, []);
 
   const checkAuth = async () => {
-    // 检查是否连接了钱包
+    // Check if the wallet is connected
     if (window.ethereum) {
       try {
         const accounts = await window.ethereum.request({
@@ -28,13 +28,13 @@ export default function SenderPage() {
         });
 
         if (accounts.length === 0) {
-          // 如果没有连接钱包，重定向到主页
+          // If no wallet is connected, redirect to the homepage
           router.push("/");
         } else {
           setWalletAddress(accounts[0]);
         }
       } catch (error) {
-        console.error("验证身份时出错:", error);
+        console.error("Error verifying identity:", error);
         router.push("/");
       }
     } else {
@@ -43,7 +43,7 @@ export default function SenderPage() {
   };
 
   const handleRoleReset = () => {
-    router.push("/"); // 返回角色选择页面
+    router.push("/"); // Return to role selection page
   };
 
   const renderContent = () => {
@@ -62,9 +62,9 @@ export default function SenderPage() {
       <main className="flex-1 p-8">
         <Card className="w-full">
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>发送者面板</CardTitle>
+            <CardTitle>Sender Panel</CardTitle>
             <Button variant="ghost" onClick={handleRoleReset}>
-              <ArrowLeft className="mr-2 h-4 w-4" /> 返回选择身份
+              <ArrowLeft className="mr-2 h-4 w-4" /> Return to Select Identity
             </Button>
           </CardHeader>
           <CardContent>
@@ -72,11 +72,11 @@ export default function SenderPage() {
               <TabsList>
                 <TabsTrigger value="create-order">
                   <Package className="mr-2 h-4 w-4" />
-                  创建订单
+                  Create Order
                 </TabsTrigger>
                 <TabsTrigger value="orders">
                   <Package className="mr-2 h-4 w-4" />
-                  我的订单
+                  My Orders
                 </TabsTrigger>
               </TabsList>
               <TabsContent value={activeTab}>{renderContent()}</TabsContent>

@@ -1,10 +1,10 @@
 import { ethers } from "ethers";
 import { LOGISTIC_ADDRESS, logistic_ABI2 } from "@/utils/constants";
 
-// 获取合约实例
+// Get contract instance
 const getContract = async () => {
   if (!window.ethereum) {
-    throw new Error("请安装MetaMask钱包");
+    throw new Error("Please install MetaMask wallet.");
   }
 
   const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -15,132 +15,132 @@ const getContract = async () => {
 };
 
 /**
- * 接单函数 - 快递员接受一个待处理的订单
- * @param {number} orderId - 要接单的订单ID
- * @returns {Promise} 包含交易结果的Promise
+ * Take an order - Courier accepts a pending order
+ * @param {number} orderId - Order ID
+ * @returns {Promise} Promise containing the transaction result
  */
 export const takeOrder = async (orderId) => {
   try {
     const contract = await getContract();
 
-    // 调用合约的takeOrder函数
+    // Call the takeOrder function in the contract
     const tx = await contract.takeOrder(orderId);
 
-    // 等待交易确认
+    // Wait for transaction confirmation
     const receipt = await tx.wait();
 
-    console.log("接单成功:", receipt);
+    console.log("Order successfully taken:", receipt);
     return {
       success: true,
-      message: "接单成功",
+      message: "Order successfully taken",
       data: receipt,
     };
   } catch (error) {
-    console.error("接单失败:", error);
+    console.error("Failed to take order:", error);
     return {
       success: false,
-      message: error.message || "接单失败",
+      message: error.message || "Failed to take order",
       error,
     };
   }
 };
 
 /**
- * 开始配送 - 将订单状态更改为"运输中"
- * @param {number} orderId - 订单ID
- * @returns {Promise} 包含交易结果的Promise
+ * Start delivery - Change the order status to "In Transit"
+ * @param {number} orderId - Order ID
+ * @returns {Promise} Promise containing the transaction result
  */
 export const startDelivery = async (orderId) => {
   try {
     const contract = await getContract();
 
-    // 调用合约的modifyOrder函数，将状态设为"运输中"(2)
+    // Call the modifyOrder function in the contract to set the status to "In Transit" (2)
     const tx = await contract.modifyOrder(orderId, 2);
 
-    // 等待交易确认
+    // Wait for transaction confirmation
     const receipt = await tx.wait();
 
-    console.log("订单已更新为运输中:", receipt);
+    console.log("Order status updated to 'In Transit':", receipt);
     return {
       success: true,
-      message: "已开始配送",
+      message: "Delivery started",
       data: receipt,
     };
   } catch (error) {
-    console.error("开始配送失败:", error);
+    console.error("Failed to start delivery:", error);
     return {
       success: false,
-      message: error.message || "开始配送失败",
+      message: error.message || "Failed to start delivery",
       error,
     };
   }
 };
 
 /**
- * 送达订单 - 将订单状态更改为"已送达"
- * @param {number} orderId - 订单ID
- * @returns {Promise} 包含交易结果的Promise
+ * Deliver order - Change the order status to "Delivered"
+ * @param {number} orderId - Order ID
+ * @returns {Promise} Promise containing the transaction result
  */
 export const deliverOrder = async (orderId) => {
   try {
     const contract = await getContract();
 
-    // 调用合约的modifyOrder函数，将状态设为"已送达"(3)
+    // Call the modifyOrder function in the contract to set the status to "Delivered" (3)
     const tx = await contract.modifyOrder(orderId, 3);
 
-    // 等待交易确认
+    // Wait for transaction confirmation
     const receipt = await tx.wait();
 
-    console.log("订单已更新为已送达:", receipt);
+    console.log("Order status updated to 'Delivered':", receipt);
     return {
       success: true,
-      message: "订单已送达",
+      message: "Order delivered",
       data: receipt,
     };
   } catch (error) {
-    console.error("送达失败:", error);
+    console.error("Failed to deliver order:", error);
     return {
       success: false,
-      message: error.message || "送达失败",
+      message: error.message || "Failed to deliver order",
       error,
     };
   }
 };
 
 /**
- * 取消订单 - 将订单状态更改为"已取消"
- * @param {number} orderId - 订单ID
- * @returns {Promise} 包含交易结果的Promise
+ * Cancel order - Change the order status to "Cancelled"
+ * @param {number} orderId - Order ID
+ * @returns {Promise} Promise containing the transaction result
  */
 export const cancelOrder = async (orderId) => {
   try {
     const contract = await getContract();
 
-    // 调用合约的modifyOrder函数，将状态设为"已取消"(5)
+    // Call the modifyOrder function in the contract to set the status to "Cancelled" (5)
     const tx = await contract.modifyOrder(orderId, 5);
 
-    // 等待交易确认
+    // Wait for transaction confirmation
     const receipt = await tx.wait();
 
-    console.log("订单已取消:", receipt);
+    console.log("Order cancelled:", receipt);
     return {
       success: true,
-      message: "订单已取消",
+      message: "Order cancelled",
       data: receipt,
     };
   } catch (error) {
-    console.error("取消订单失败:", error);
+    console.error("Failed to cancel order:", error);
     return {
       success: false,
-      message: error.message || "取消订单失败",
+      message: error.message || "Failed to cancel order",
       error,
     };
   }
 };
 
 /**
- * 获取快递员的所有订单
- * @returns {Promise<Array>} 快递员的订单列表
+ * Get all orders for the courier
+ * @returns {Promise<Array>} List of orders for the courier
  */
 export const getCourierOrders = async () => {
   try {
@@ -148,10 +148,10 @@ export const getCourierOrders = async () => {
     const signer = contract.signer;
     const courierAddress = await signer.getAddress();
 
-    // 获取总订单数
+    // Get the total number of orders
     const totalOrderCount = await contract.totalOrderCount();
 
-    // 查找属于当前快递员的订单
+    // Find orders belonging to the current courier
     const orders = [];
 
     for (let i = 1; i <= totalOrderCount; i++) {
@@ -171,7 +171,7 @@ export const getCourierOrders = async () => {
           });
         }
       } catch (err) {
-        console.warn(`获取订单 #${i} 失败`, err);
+        console.warn(`Failed to fetch order #${i}`, err);
       }
     }
 
@@ -180,34 +180,34 @@ export const getCourierOrders = async () => {
       data: orders,
     };
   } catch (error) {
-    console.error("获取订单失败:", error);
+    console.error("Failed to fetch orders:", error);
     return {
       success: false,
-      message: error.message || "获取订单失败",
+      message: error.message || "Failed to fetch orders",
       error,
     };
   }
 };
 
 /**
- * 获取所有可接单的订单
- * @returns {Promise<Array>} 所有待处理订单列表
+ * Get all available orders
+ * @returns {Promise<Array>} List of all pending orders
  */
 export const getAvailableOrders = async () => {
   try {
     const contract = await getContract();
 
-    // 获取总订单数
+    // Get the total number of orders
     const totalOrderCount = await contract.totalOrderCount();
 
-    // 查找所有待处理的订单
+    // Find all pending orders
     const orders = [];
 
     for (let i = 1; i <= totalOrderCount; i++) {
       try {
         const order = await contract.orderMap(i);
 
-        // 只获取状态为"待处理"(0)的订单
+        // Only fetch orders with status "Pending" (0)
         if (parseInt(order.status.toString()) === 0) {
           orders.push({
             id: order.orderID.toNumber(),
@@ -220,7 +220,7 @@ export const getAvailableOrders = async () => {
           });
         }
       } catch (err) {
-        console.warn(`获取订单 #${i} 失败`, err);
+        console.warn(`Failed to fetch order #${i}`, err);
       }
     }
 
@@ -229,10 +229,10 @@ export const getAvailableOrders = async () => {
       data: orders,
     };
   } catch (error) {
-    console.error("获取可接单列表失败:", error);
+    console.error("Failed to fetch available orders:", error);
     return {
       success: false,
-      message: error.message || "获取可接单列表失败",
+      message: error.message || "Failed to fetch available orders",
       error,
     };
   }

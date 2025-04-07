@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Package, Truck, Edit, Trash2, ArrowLeft } from "lucide-react";
+import { Package, Truck, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import OrderList from "@/components/OrderList";
 
@@ -11,7 +11,7 @@ export default function CourierPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("accept-order");
 
-  // 检查用户是否已登录
+  // Check if the user is logged in
   useEffect(() => {
     checkAuth();
   }, []);
@@ -27,7 +27,7 @@ export default function CourierPage() {
           router.push("/");
         }
       } catch (error) {
-        console.error("验证身份时出错:", error);
+        console.error("Error verifying identity:", error);
         router.push("/");
       }
     } else {
@@ -44,19 +44,19 @@ export default function CourierPage() {
       <main className="flex-1 p-8">
         <Card className="w-full">
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>快递员面板</CardTitle>
+            <CardTitle>Courier Panel</CardTitle>
             <Button variant="ghost" onClick={handleRoleReset}>
-              <ArrowLeft className="mr-2 h-4 w-4" /> 返回选择身份
+              <ArrowLeft className="mr-2 h-4 w-4" /> Return to Select Identity
             </Button>
           </CardHeader>
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList>
                 <TabsTrigger value="accept-order">
-                  <Truck className="mr-2 h-4 w-4" /> 可接订单
+                  <Truck className="mr-2 h-4 w-4" /> Acceptable Orders
                 </TabsTrigger>
                 <TabsTrigger value="my-order">
-                  <Package className="mr-2 h-4 w-4" /> 已接订单
+                  <Package className="mr-2 h-4 w-4" /> Received Orders
                 </TabsTrigger>
               </TabsList>
 

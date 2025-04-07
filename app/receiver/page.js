@@ -13,23 +13,22 @@ export default function ReceiverPage() {
   const router = useRouter();
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
-  const [processingOrderId, setProcessingOrderId] = useState(null); // 记录当前处理的订单ID
+  const [processingOrderId, setProcessingOrderId] = useState(null); // Track the currently processing order ID
   const [orders, setOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
-  // 每个订单的评价状态
-  const [orderRatings, setOrderRatings] = useState({});
+  const [orderRatings, setOrderRatings] = useState({}); // Ratings for each order
 
-  // 订单状态文本
+  // Order status text
   const statusText = [
-    "待处理",
-    "已接单",
-    "运输中",
-    "待收货",
-    "已完成",
-    "已取消",
+    "Pending",
+    "Taken",
+    "In Transit",
+    "Awaiting Receipt",
+    "Completed",
+    "Cancelled",
   ];
 
-  // 检查用户是否已登录
+  // Check if the user is logged in
   useEffect(() => {
     checkAuth();
   }, []);
@@ -44,11 +43,11 @@ export default function ReceiverPage() {
         if (accounts.length === 0) {
           router.push("/");
         } else {
-          // 加载收货人订单
+          // Load receiver's orders
           loadReceiverOrders(accounts[0]);
         }
       } catch (error) {
-        console.error("验证身份时出错:", error);
+        console.error("Error verifying identity:", error);
         router.push("/");
       }
     } else {
@@ -56,32 +55,32 @@ export default function ReceiverPage() {
     }
   };
 
-  // 加载收货人的订单
+  // Load receiver's orders
   const loadReceiverOrders = async (userAddress) => {
     setLoadingOrders(true);
     try {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
 
-      // 创建合约实例
+      // Create contract instance
       const contract = new ethers.Contract(
         LOGISTIC_ADDRESS,
         logistic_ABI2,
         signer
       );
 
-      // 获取订单总数
+      // Get total order count
       const totalOrderCount = await contract.totalOrderCount();
 
-      // 存储属于当前用户的订单
+      // Store orders belonging to the current user
       const myOrders = [];
       const newOrderRatings = {};
 
-      // 遍历获取所有订单
+      // Iterate through all orders
       for (let i = 1; i <= totalOrderCount; i++) {
         const order = await contract.orderMap(i);
 
-        // 检查是否是当前用户的订单
+        // Check if the order belongs to the current user
         if (order.receiverAddr.toLowerCase() === userAddress.toLowerCase()) {
           const orderId = order.orderID.toNumber();
           myOrders.push({
@@ -92,7 +91,7 @@ export default function ReceiverPage() {
             ethAmount: ethers.utils.formatEther(order.ethAmount),
           });
 
-          // 为每个订单设置默认评价为"好评"
+          // Set default rating for each order to "Good"
           newOrderRatings[orderId] = orderRatings[orderId] || "1";
         }
       }
@@ -100,14 +99,14 @@ export default function ReceiverPage() {
       setOrders(myOrders);
       setOrderRatings(newOrderRatings);
     } catch (error) {
-      console.error("加载订单失败:", error);
-      setStatus("获取订单失败，请稍后再试");
+      console.error("Failed to load orders:", error);
+      setStatus("Failed to retrieve orders. Please try again later.");
     } finally {
       setLoadingOrders(false);
     }
   };
 
-  // 更新特定订单的评价
+  // Update the rating for a specific order
   const handleRatingChange = (orderId, newRating) => {
     setOrderRatings((prev) => ({
       ...prev,
@@ -115,21 +114,21 @@ export default function ReceiverPage() {
     }));
   };
 
-  // 修复confirmReceive函数
+  // Confirm receipt of an order
   const confirmReceive = async (orderId) => {
     setLoading(true);
     setProcessingOrderId(orderId);
-    setStatus(`订单#${orderId} 确认中...`);
+    setStatus(`Order #${orderId} is being confirmed...`);
 
     try {
-      if (!window.ethereum) return alert("请安装MetaMask!");
+      if (!window.ethereum) return alert("Please install MetaMask!");
 
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       await provider.send("eth_requestAccounts", []);
       const signer = provider.getSigner();
       const userAddress = await signer.getAddress();
 
-      console.log("当前用户地址:", userAddress);
+      console.log("Current user address:", userAddress);
 
       const contract = new ethers.Contract(
         LOGISTIC_ADDRESS,
@@ -137,83 +136,77 @@ export default function ReceiverPage() {
         signer
       );
 
-      // 获取订单详情进行检查
+      // Retrieve order details for verification
       const order = await contract.orderMap(orderId);
-      console.log("订单详情:", order);
-      console.log("订单状态:", order.status.toString());
-      console.log("订单接收者地址:", order.receiverAddr);
+      console.log("Order details:", order);
+      console.log("Order status:", order.status.toString());
+      console.log("Order receiver address:", order.receiverAddr);
       console.log(
-        "当前用户地址是否匹配接收者:",
+        "Does the current user address match the receiver:",
         order.receiverAddr.toLowerCase() === userAddress.toLowerCase()
       );
 
-      // 检查订单状态是否为"已送达"(3)
+      // Check if the order status is "Delivered" (3)
       if (parseInt(order.status.toString()) !== 3) {
-        throw new Error("只有已送达的订单才能确认收货");
+        throw new Error("Only delivered orders can be confirmed.");
       }
 
-      // 确保接收者地址匹配
+      // Ensure the receiver address matches
       if (order.receiverAddr.toLowerCase() !== userAddress.toLowerCase()) {
-        throw new Error("您不是该订单的接收者");
+        throw new Error("You are not the receiver of this order.");
       }
 
-      // 使用订单特定的评价，根据合约中OrderRating的定义映射
-      // OrderRating: NotFinished(0), Good(1), Neutral(2), Bad(3), Cancelled(4)
+      // Map the rating based on the contract's OrderRating enum
       const ratingMap = {
-        "1": 1, // 好评 -> Good(1)
-        "2": 2, // 中评 -> Neutral(2)
-        "3": 3, // 差评 -> Bad(3)
+        "1": 1, // Good
+        "2": 2, // Neutral
+        "3": 3, // Bad
       };
 
       const ratingStr = orderRatings[orderId] || "1";
       const orderRating = ratingMap[ratingStr];
 
       console.log(
-        "订单ID:",
+        "Order ID:",
         orderId,
-        "评价选项:",
+        "Rating option:",
         ratingStr,
-        "映射为枚举值:",
+        "Mapped to enum value:",
         orderRating
       );
 
-      // 添加这一行，确保有tx变量
+      // Submit the transaction
       const tx = await contract.receiverOrder(orderId, orderRating);
-      console.log("交易已提交:", tx.hash);
+      console.log("Transaction submitted:", tx.hash);
 
-      // 等待交易确认
+      // Wait for transaction confirmation
       const receipt = await tx.wait();
-      console.log("交易已确认:", receipt);
+      console.log("Transaction confirmed:", receipt);
 
-      // 更新订单状态
+      // Update the order status
       setOrders(
         orders.map((order) =>
           order.id === orderId
-            ? { ...order, status: 4 } // 更新为已完成状态
+            ? { ...order, status: 4 } // Update to "Completed"
             : order
         )
       );
 
-      setStatus(`订单#${orderId} 已确认收货！`);
+      setStatus(`Order #${orderId} has been successfully confirmed!`);
     } catch (err) {
-      console.error("确认收货失败:", err);
+      console.error("Failed to confirm receipt:", err);
 
-      // 提取更有用的错误信息
       let errorMsg = err.message;
       if (err.data) {
         try {
-          // 尝试解析智能合约返回的错误信息
-          errorMsg = `合约错误: ${err.data}`;
-        } catch (e) {
-          // 使用原始错误信息
-        }
+          errorMsg = `Contract error: ${err.data}`;
+        } catch (e) {}
       }
 
-      setStatus(`确认失败: ${errorMsg}`);
+      setStatus(`Confirmation failed: ${errorMsg}`);
     } finally {
       setLoading(false);
       setProcessingOrderId(null);
-      // 5秒后清除状态消息
       setTimeout(() => setStatus(""), 5000);
     }
   };
@@ -222,7 +215,7 @@ export default function ReceiverPage() {
     router.push("/");
   };
 
-  // 手动刷新订单
+  // Manually refresh orders
   const handleRefresh = async () => {
     try {
       const accounts = await window.ethereum.request({
@@ -232,7 +225,7 @@ export default function ReceiverPage() {
         loadReceiverOrders(accounts[0]);
       }
     } catch (error) {
-      console.error("刷新订单失败:", error);
+      console.error("Failed to refresh orders:", error);
     }
   };
 
@@ -241,22 +234,22 @@ export default function ReceiverPage() {
       <main className="flex-1 p-8">
         <Card className="w-full">
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>接收者面板</CardTitle>
+            <CardTitle>Receiver Panel</CardTitle>
             <div className="flex space-x-2">
               <Button
                 variant="outline"
                 onClick={handleRefresh}
                 disabled={loadingOrders}
               >
-                {loadingOrders ? "加载中..." : "刷新订单"}
+                {loadingOrders ? "Loading..." : "Refresh Orders"}
               </Button>
               <Button variant="ghost" onClick={handleRoleReset}>
-                <ArrowLeft className="mr-2 h-4 w-4" /> 返回
+                <ArrowLeft className="mr-2 h-4 w-4" /> Return
               </Button>
             </div>
           </CardHeader>
           <CardContent>
-            <h2 className="text-xl font-bold mb-4">我的订单</h2>
+            <h2 className="text-xl font-bold mb-4">My Orders</h2>
 
             {status && (
               <div className="mb-4 p-3 bg-blue-100 text-blue-800 rounded">
@@ -266,22 +259,26 @@ export default function ReceiverPage() {
 
             {loadingOrders ? (
               <div className="text-center py-8">
-                <p>正在加载订单...</p>
+                <p>Loading orders...</p>
               </div>
             ) : orders.length === 0 ? (
-              <p className="text-center py-4">暂无订单</p>
+              <p className="text-center py-4">No orders available</p>
             ) : (
               <div className="space-y-4">
                 {orders.map((order) => (
                   <Card key={order.id} className="p-4">
                     <div className="flex justify-between">
                       <div>
-                        <h3 className="font-bold">订单 #{order.id}</h3>
-                        <p className="text-sm">发送地址: {order.senderLoc}</p>
-                        <p className="text-sm">送货地址: {order.receiverLoc}</p>
-                        <p className="text-sm">金额: {order.ethAmount} ETH</p>
+                        <h3 className="font-bold">Order #{order.id}</h3>
                         <p className="text-sm">
-                          状态:
+                          Sender Address: {order.senderLoc}
+                        </p>
+                        <p className="text-sm">
+                          Delivery Address: {order.receiverLoc}
+                        </p>
+                        <p className="text-sm">Amount: {order.ethAmount} ETH</p>
+                        <p className="text-sm">
+                          Status:
                           <span
                             className={`ml-2 px-2 py-1 text-xs rounded-full ${
                               order.status === 3
@@ -316,7 +313,7 @@ export default function ReceiverPage() {
                                   htmlFor={`good-${order.id}`}
                                   className="ml-1"
                                 >
-                                  好评
+                                  Good
                                 </Label>
                               </div>
                               <div className="flex items-center">
@@ -328,7 +325,7 @@ export default function ReceiverPage() {
                                   htmlFor={`neutral-${order.id}`}
                                   className="ml-1"
                                 >
-                                  中评
+                                  Neutral
                                 </Label>
                               </div>
                               <div className="flex items-center">
@@ -340,7 +337,7 @@ export default function ReceiverPage() {
                                   htmlFor={`bad-${order.id}`}
                                   className="ml-1"
                                 >
-                                  差评
+                                  Bad
                                 </Label>
                               </div>
                             </RadioGroup>
@@ -356,8 +353,8 @@ export default function ReceiverPage() {
                             className="w-full mt-5"
                           >
                             {processingOrderId === order.id
-                              ? "处理中..."
-                              : "确认收货"}
+                              ? "Processing..."
+                              : "Confirm Receipt"}
                           </Button>
                         </div>
                       )}

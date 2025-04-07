@@ -20,30 +20,15 @@ import {
 const OrderList = ({ showAll = false, getTakedOrder = false }) => {
   const [loading, setLoading] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [orders, setOrders] = useState([
-    {
-      id: 1,
-      receiverAddr: "0xf00c8Ecb203e5C3ABbe7305F355dd273e0056FA0",
-      senderLoc: "深水埗区青山道100号",
-      receiverLoc: "中环干诺道中50号",
-      status: 0,
-      ethAmount: "0.05",
-    },
-    {
-      id: 2,
-      receiverAddr: "0xf00c8Ecb203e5C3ABbe7305F355dd273e0056FA0",
-      senderLoc: "荃湾区德士古道88号",
-      receiverLoc: "旺角弥敦道200号",
-      status: 1,
-      ethAmount: "0.03",
-    },
-  ]);
+  const [orders, setOrders] = useState([]);
+
   useEffect(() => {
-    // 检查用户是否已登录
+    // Check if the user is logged in
     loadOrders();
-    console.log("渲染了");
+    console.log("Rendered");
   }, []);
-  // 加载订单数据
+
+  // Load order data
   const loadOrders = async () => {
     setLoading(true);
     try {
@@ -66,7 +51,7 @@ const OrderList = ({ showAll = false, getTakedOrder = false }) => {
         const order = await contract.orderMap(i);
 
         if (
-          // showAll查询所有||查询当前发送者的订单
+          // showAll queries all orders || queries orders for the current sender
           !getTakedOrder ||
           showAll ||
           order.senderAddr.toLowerCase() === userAddress.toLowerCase()
@@ -81,105 +66,106 @@ const OrderList = ({ showAll = false, getTakedOrder = false }) => {
           });
         }
         if (getTakedOrder) {
-          // todo 查询已接单的订单
+          // TODO: Query accepted orders
         }
       }
 
       setOrders(ordersList);
     } catch (err) {
-      console.error("加载订单失败:", err);
+      console.error("Failed to load orders:", err);
     } finally {
       setLoading(false);
     }
   };
-  // 开始运输
+
+  // Start delivery
   const startSend = async (orderId) => {
     await startDelivery(orderId);
-    // 刷新订单列表
+    // Refresh order list
     loadOrders();
   };
 
-  // 货物送达
+  // Mark order as delivered
   const deliverOk = async (orderId) => {
     await deliverOrder(orderId);
     loadOrders();
   };
 
-  // 删除订单
+  // Delete order
   const handleDelete = (id) => {
-    alert(`删除订单 #${id}`);
-    // 实际删除逻辑需要实现
+    alert(`Delete order #${id}`);
+    // Actual delete logic needs to be implemented
   };
 
-  // 修改订单
+  // Edit order
   const handleEdit = (order) => {
     setSelectedOrder(order);
   };
 
-  // 接单
+  // Accept order
   const handleAcceptOrder = async (orderId) => {
     try {
-      // 显示加载状态
+      // Show loading state
       setLoading(true);
 
-      // 连接以太坊
+      // Connect to Ethereum
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       await provider.send("eth_requestAccounts", []);
       const signer = provider.getSigner();
 
-      // 创建合约实例
+      // Create contract instance
       const contract = new ethers.Contract(
         LOGISTIC_ADDRESS,
         logistic_ABI2,
         signer
       );
 
-      // 调用合约的takeOrder函数
+      // Call the takeOrder function in the contract
       const tx = await contract.takeOrder(orderId);
 
-      // 等待交易确认
+      // Wait for transaction confirmation
       await tx.wait();
 
-      // 刷新订单列表
+      // Refresh order list
       loadOrders();
     } catch (error) {
-      console.error("接单失败:", error);
-      alert(`接单失败: ${error.message}`);
+      console.error("Failed to accept order:", error);
+      alert(`Failed to accept order: ${error.message}`);
     } finally {
       setLoading(false);
     }
   };
 
-  // 返回订单列表
+  // Return to order list
   const handleBackToList = () => {
     setSelectedOrder(null);
   };
 
-  // 如果选择了订单，显示修改页面
+  // If an order is selected, show the edit page
   if (selectedOrder) {
     return <ModifyOrder order={selectedOrder} onBack={handleBackToList} />;
   }
 
-  // 否则显示订单列表
+  // Otherwise, show the order list
   return (
     <div>
-      <h2 className="text-lg font-bold mb-4">我的订单</h2>
+      <h2 className="text-lg font-bold mb-4">My Orders</h2>
 
       {loading ? (
-        <p>加载中...</p>
+        <p>Loading...</p>
       ) : orders.length === 0 ? (
-        <p>暂无订单</p>
+        <p>No orders available</p>
       ) : (
         <table className="w-full border-collapse">
           <thead>
             <tr className="bg-gray-100">
               <th className="p-2 text-left">ID</th>
-              <th className="p-2 text-left">接收地址</th>
-              <th className="p-2 text-left">发送位置</th>
-              <th className="p-2 text-left">接收位置</th>
-              <th className="p-2 text-left">金额</th>
-              <th className="p-2 text-left">状态</th>
-              <th className="p-2 text-left">操作</th>
+              <th className="p-2 text-left">Receiver Address</th>
+              <th className="p-2 text-left">Sender Location</th>
+              <th className="p-2 text-left">Receiver Location</th>
+              <th className="p-2 text-left">Amount</th>
+              <th className="p-2 text-left">Status</th>
+              <th className="p-2 text-left">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -193,17 +179,17 @@ const OrderList = ({ showAll = false, getTakedOrder = false }) => {
                 <td className="p-2">
                   {
                     [
-                      "待处理",
-                      "已接单",
-                      "运输中",
-                      "已送达",
-                      "已完成",
-                      "已取消",
+                      "Pending",
+                      "Taken",
+                      "In Transit",
+                      "Delivered",
+                      "Completed",
+                      "Cancelled",
                     ][order.status]
                   }
                 </td>
                 <td className="p-2">
-                  {/* 如果是用户 */}
+                  {/* If user */}
                   {!showAll && (
                     <>
                       <Button
@@ -212,7 +198,7 @@ const OrderList = ({ showAll = false, getTakedOrder = false }) => {
                         className="mr-2"
                         disabled={order.status !== 0}
                       >
-                        修改
+                        Edit
                       </Button>
                       <Button
                         size="sm"
@@ -220,11 +206,11 @@ const OrderList = ({ showAll = false, getTakedOrder = false }) => {
                         onClick={() => handleDelete(order.id)}
                         disabled={order.status !== 0}
                       >
-                        删除
+                        Delete
                       </Button>
                     </>
                   )}
-                  {/* 如果是外卖员查询所有可接单 */}{" "}
+                  {/* If courier queries all available orders */}
                   {showAll && !getTakedOrder && (
                     <Button
                       size="sm"
@@ -232,10 +218,10 @@ const OrderList = ({ showAll = false, getTakedOrder = false }) => {
                       className="mr-2"
                       disabled={order.status !== 0}
                     >
-                      接单
+                      Accept Order
                     </Button>
                   )}
-                  {/* 如果时外卖员查询已接单 TODO 替换成 getTakedOrder*/}
+                  {/* If courier queries accepted orders */}
                   {true && (
                     <>
                       <Button
@@ -244,7 +230,7 @@ const OrderList = ({ showAll = false, getTakedOrder = false }) => {
                         className="mr-2"
                         disabled={order.status !== 1}
                       >
-                        开始运输
+                        Start Delivery
                       </Button>
                       <Button
                         size="sm"
@@ -252,7 +238,7 @@ const OrderList = ({ showAll = false, getTakedOrder = false }) => {
                         className="mr-2"
                         disabled={order.status !== 2}
                       >
-                        货物送达
+                        Mark as Delivered
                       </Button>
                     </>
                   )}
@@ -264,7 +250,7 @@ const OrderList = ({ showAll = false, getTakedOrder = false }) => {
       )}
 
       <Button className="mt-4" onClick={loadOrders}>
-        刷新订单
+        Refresh Orders
       </Button>
     </div>
   );

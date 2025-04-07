@@ -19,7 +19,7 @@ const CreateOrder = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  // 创建订单函数 - 修改为仅传递3个参数
+  // Create order function - Adjusted to pass only 3 parameters
   const sendOrder = async (
     receiverAddress,
     senderLocation,
@@ -27,32 +27,32 @@ const CreateOrder = () => {
     itemInfo,
     ethAmount
   ) => {
-    // 检查MetaMask是否安装
+    // Check if MetaMask is installed
     if (!window.ethereum) {
-      alert("请安装MetaMask!");
-      throw new Error("未安装MetaMask");
+      alert("Please install MetaMask!");
+      throw new Error("MetaMask not installed");
     }
 
     try {
-      // 连接到提供者
+      // Connect to provider
       const provider = new ethers.providers.Web3Provider(window.ethereum);
-      // 请求用户授权
+      // Request user authorization
       await provider.send("eth_requestAccounts", []);
       const signer = provider.getSigner();
 
-      // 物流平台合约地址
+      // Logistics platform contract address
       const contractAddress = LOGISTIC_ADDRESS;
-      // 合约ABI
+      // Contract ABI
       const contractABI = logistic_ABI;
 
-      // 创建合约实例
+      // Create contract instance
       const contract = new ethers.Contract(
         contractAddress,
         contractABI,
         signer
       );
 
-      console.log("准备创建订单，参数:", {
+      console.log("Preparing to create order with parameters:", {
         receiverAddress,
         senderLocation,
         receiverLocation,
@@ -60,8 +60,8 @@ const CreateOrder = () => {
         ethAmount,
       });
 
-      // 根据实际合约定义调整参数数量
-      // 这里假设合约只接受3个参数：接收者地址、发送位置、接收位置
+      // Adjust the number of parameters based on the actual contract definition
+      // Here we assume the contract only accepts 3 parameters: receiver address, sender location, receiver location
       const tx = await contract.createOrder(
         receiverAddress,
         senderLocation,
@@ -69,23 +69,23 @@ const CreateOrder = () => {
         { value: ethers.utils.parseEther(ethAmount) }
       );
 
-      console.log("交易已提交，等待确认...");
-      console.log("交易哈希:", tx.hash);
+      console.log("Transaction submitted, waiting for confirmation...");
+      console.log("Transaction hash:", tx.hash);
 
-      // 等待交易确认
+      // Wait for transaction confirmation
       const receipt = await tx.wait();
-      console.log("交易已确认，交易收据:", receipt);
+      console.log("Transaction confirmed, receipt:", receipt);
 
       return receipt;
     } catch (error) {
-      console.error("创建订单失败:", error);
+      console.error("Failed to create order:", error);
       throw error;
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setStatus("处理中...");
+    setStatus("Processing...");
 
     try {
       await sendOrder(
@@ -96,9 +96,9 @@ const CreateOrder = () => {
         formData.ethAmount
       );
 
-      setStatus("订单创建成功！");
+      setStatus("Order created successfully!");
 
-      // 重置表单
+      // Reset form
       setFormData({
         receiverAddress: "",
         senderLocation: "",
@@ -108,13 +108,13 @@ const CreateOrder = () => {
       });
     } catch (err) {
       console.error(err);
-      setStatus("创建失败: " + (err.message || "未知错误"));
+      setStatus("Failed to create order: " + (err.message || "Unknown error"));
     }
   };
 
   return (
     <div className="p-4">
-      <h2 className="text-lg font-bold mb-4">创建新订单</h2>
+      <h2 className="text-lg font-bold mb-4">Create New Order</h2>
 
       {status && (
         <p className="mb-4 text-sm bg-gray-100 p-2 rounded">{status}</p>
@@ -122,7 +122,7 @@ const CreateOrder = () => {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm mb-1">接收者地址</label>
+          <label className="block text-sm mb-1">Receiver Address</label>
           <input
             type="text"
             name="receiverAddress"
@@ -135,33 +135,33 @@ const CreateOrder = () => {
         </div>
 
         <div>
-          <label className="block text-sm mb-1">发送位置</label>
+          <label className="block text-sm mb-1">Sender Location</label>
           <input
             type="text"
             name="senderLocation"
             value={formData.senderLocation}
             onChange={handleChange}
-            placeholder="深水埗..."
+            placeholder="Sham Shui Po..."
             className="w-full p-2 border rounded"
             required
           />
         </div>
 
         <div>
-          <label className="block text-sm mb-1">接收位置</label>
+          <label className="block text-sm mb-1">Receiver Location</label>
           <input
             type="text"
             name="receiverLocation"
             value={formData.receiverLocation}
             onChange={handleChange}
-            placeholder="中环..."
+            placeholder="Central..."
             className="w-full p-2 border rounded"
             required
           />
         </div>
 
         <div>
-          <label className="block text-sm mb-1">支付金额 (ETH)</label>
+          <label className="block text-sm mb-1">Payment Amount (ETH)</label>
           <input
             type="text"
             name="ethAmount"
@@ -173,19 +173,19 @@ const CreateOrder = () => {
           />
         </div>
         {/* <div>
-          <label className="block text-sm mb-1">物品信息</label>
+          <label className="block text-sm mb-1">Item Information</label>
           <input
             type="text"
             name="itemInfo"
             value={formData.itemInfo}
             onChange={handleChange}
-            placeholder="请描述物品特性、尺寸等信息"
+            placeholder="Please describe the item's characteristics, dimensions, etc."
             className="w-full p-2 border rounded"
             required
           />
         </div> */}
         <Button type="submit" className="w-full">
-          创建订单
+          Create Order
         </Button>
       </form>
     </div>

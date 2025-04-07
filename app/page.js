@@ -23,19 +23,19 @@ export default function Home() {
   });
   const router = useRouter();
 
-  // 检查是否已连接钱包
+  // Check if the wallet is connected
   useEffect(() => {
     checkIfWalletIsConnected();
   }, []);
 
-  // 当钱包地址变化时，检查角色状态
+  // Check role status when wallet address changes
   useEffect(() => {
     if (walletAddress) {
       checkRoleStatus();
     }
   }, [walletAddress]);
 
-  // 检查用户拥有哪些角色
+  // Check which roles the user has
   const checkRoleStatus = async () => {
     try {
       if (!walletAddress) return;
@@ -47,38 +47,38 @@ export default function Home() {
         provider
       );
 
-      // 首先检查用户是否已注册
+      // Check if the user is registered
       const isRegistered = await userManagementContract.isRegistered(
         walletAddress
       );
 
       if (isRegistered) {
-        // 如果已注册，获取用户角色
+        // If registered, get the user's role
         const userRole = await userManagementContract.userRoles(walletAddress);
 
-        // 根据合约中的角色枚举定义，判断用户角色
-        // 假设枚举定义为：enum Role { None, Sender, Courier, Receiver }
+        // Based on the enum definition in the contract, determine the user's role
+        // Assume the enum is defined as: enum Role { None, Sender, Courier, Receiver }
         const roleEnum = parseInt(userRole.toString());
 
-        // 更新用户角色状态
+        // Update the user's role status
         setRoleStatus({
           sender: roleEnum === 0, // Role.Sender
           courier: roleEnum === 1, // Role.Courier
           receiver: roleEnum === 2, // Role.Receiver
         });
 
-        console.log("用户已注册，角色代码:", roleEnum);
+        console.log("User is registered, role code:", roleEnum);
       } else {
-        // 如果未注册，所有角色状态都是false
+        // If not registered, all role statuses are false
         setRoleStatus({
           sender: false,
           courier: false,
           receiver: false,
         });
-        console.log("用户未注册");
+        console.log("User is not registered");
       }
     } catch (error) {
-      console.error("检查角色状态时出错:", error);
+      console.error("Error checking role status:", error);
     }
   };
 
@@ -94,10 +94,10 @@ export default function Home() {
           setIsLoggedIn(true);
         }
       } else {
-        setError("请安装 MetaMask 钱包!");
+        setError("Please install MetaMask wallet!");
       }
     } catch (error) {
-      console.error("连接钱包时出错:", error);
+      console.error("Error connecting wallet:", error);
     }
   };
 
@@ -113,21 +113,21 @@ export default function Home() {
         setIsLoggedIn(true);
         setError("");
       } else {
-        setError("请安装 MetaMask 钱包!");
+        setError("Please install MetaMask wallet!");
       }
     } catch (error) {
-      console.error("连接钱包时出错:", error);
+      console.error("Error connecting wallet:", error);
       if (error.code === 4001) {
-        setError("您拒绝了钱包连接请求。");
+        setError("You rejected the wallet connection request.");
       } else {
-        setError(`连接钱包时出错: ${error.message}`);
+        setError(`Error connecting wallet: ${error.message}`);
       }
     }
   };
 
   const handleRoleSelect = async (role) => {
     try {
-      // 如果用户已经注册了该角色，直接进入对应页面
+      // If the user is already registered for the role, go directly to the corresponding page
       if (roleStatus[role]) {
         router.push(`/${role}`);
         return;
@@ -140,7 +140,7 @@ export default function Home() {
       await provider.send("eth_requestAccounts", []);
       const signer = provider.getSigner();
 
-      // 使用UserManagement合约
+      // Use the UserManagement contract
       const userManagementContract = new ethers.Contract(
         USER_MANAGEMENT_ADDRESS,
         userManagement_ABI,
@@ -149,40 +149,40 @@ export default function Home() {
 
       let tx;
 
-      // 根据选择的角色调用相应的注册函数
-      // 注意: 根据合约检查，注册函数不需要传入地址参数，会使用msg.sender
+      // Call the corresponding registration function based on the selected role
+      // Note: Based on the contract, the registration function does not require an address parameter, it will use msg.sender
       switch (role) {
         case "sender":
           tx = await userManagementContract.registerAsSender(walletAddress);
-          console.log("注册为发送者交易:", tx.hash);
+          console.log("Register as sender transaction:", tx.hash);
           break;
         case "courier":
           tx = await userManagementContract.registerAsCourier(walletAddress);
-          console.log("注册为快递员交易:", tx.hash);
+          console.log("Register as courier transaction:", tx.hash);
           break;
         case "receiver":
           tx = await userManagementContract.registerAsReciever(walletAddress);
-          console.log("注册为接收者交易:", tx.hash);
+          console.log("Register as receiver transaction:", tx.hash);
           break;
         default:
-          throw new Error("未知角色");
+          throw new Error("Unknown role");
       }
 
-      // 等待交易确认
+      // Wait for the transaction to be confirmed
       await tx.wait();
-      console.log(`成功注册为${role}`);
+      console.log(`Successfully registered as ${role}`);
 
-      // 更新角色状态
+      // Update role status
       setRoleStatus((prev) => ({
         ...prev,
         [role]: true,
       }));
 
-      // 注册成功后跳转到相应页面
+      // After successful registration, navigate to the corresponding page
       router.push(`/${role}`);
     } catch (error) {
-      console.error("角色注册失败:", error);
-      setError(`注册失败: ${error.message.substring(0, 100)}...`);
+      console.error("Role registration failed:", error);
+      setError(`Registration failed: ${error.message.substring(0, 100)}...`);
     } finally {
       setRegistering(false);
     }
@@ -197,11 +197,11 @@ export default function Home() {
       <div className="flex items-center justify-center min-h-screen bg-gray-100">
         <Card className="w-[350px]">
           <CardHeader>
-            <CardTitle>登录</CardTitle>
+            <CardTitle>Login</CardTitle>
           </CardHeader>
           <CardContent>
             <Button onClick={handleLogin} className="w-full bg-black">
-              使用钱包登录
+              Login with Wallet
             </Button>
             {error && <p className="mt-2 text-red-500 text-sm">{error}</p>}
           </CardContent>
@@ -214,26 +214,28 @@ export default function Home() {
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <Card className="w-[450px]">
         <CardHeader>
-          <CardTitle>选择角色</CardTitle>
-          <p className="text-sm text-gray-600">您可以注册并使用多个角色</p>
+          <CardTitle>Select Role</CardTitle>
+          <p className="text-sm text-gray-600">
+            You can register and use multiple roles
+          </p>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <div className="grid grid-cols-1 gap-4">
-            {/* 发送者卡片 */}
+            {/* Sender Card */}
             <div className="border rounded-lg p-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center">
                   <Package className="mr-2 h-5 w-5" />
-                  <h3 className="font-medium">发送者</h3>
+                  <h3 className="font-medium">Sender</h3>
                 </div>
                 {roleStatus.sender && (
                   <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center">
-                    <Check className="h-3 w-3 mr-1" /> 已注册
+                    <Check className="h-3 w-3 mr-1" /> Registered
                   </span>
                 )}
               </div>
               <p className="text-sm text-gray-500 mb-3">
-                作为发送者，您可以创建订单并发送物品
+                As a sender, you can create orders and send items
               </p>
               <div className="flex space-x-2">
                 {roleStatus.sender ? (
@@ -242,7 +244,7 @@ export default function Home() {
                     className="flex-1"
                     disabled={registering}
                   >
-                    进入发送者面板
+                    Enter Sender Panel
                   </Button>
                 ) : (
                   <Button
@@ -250,27 +252,27 @@ export default function Home() {
                     className="flex-1"
                     disabled={registering}
                   >
-                    注册为发送者
+                    Register as Sender
                   </Button>
                 )}
               </div>
             </div>
 
-            {/* 快递员卡片 */}
+            {/* Courier Card */}
             <div className="border rounded-lg p-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center">
                   <Truck className="mr-2 h-5 w-5" />
-                  <h3 className="font-medium">快递员</h3>
+                  <h3 className="font-medium">Courier</h3>
                 </div>
                 {roleStatus.courier && (
                   <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center">
-                    <Check className="h-3 w-3 mr-1" /> 已注册
+                    <Check className="h-3 w-3 mr-1" /> Registered
                   </span>
                 )}
               </div>
               <p className="text-sm text-gray-500 mb-3">
-                作为快递员，您可以接单并运送物品
+                As a courier, you can accept orders and deliver items
               </p>
               <div className="flex space-x-2">
                 {roleStatus.courier ? (
@@ -279,7 +281,7 @@ export default function Home() {
                     className="flex-1"
                     disabled={registering}
                   >
-                    进入快递员面板
+                    Enter Courier Panel
                   </Button>
                 ) : (
                   <Button
@@ -287,27 +289,27 @@ export default function Home() {
                     className="flex-1"
                     disabled={registering}
                   >
-                    注册为快递员
+                    Register as Courier
                   </Button>
                 )}
               </div>
             </div>
 
-            {/* 接收者卡片 */}
+            {/* Receiver Card */}
             <div className="border rounded-lg p-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center">
                   <User className="mr-2 h-5 w-5" />
-                  <h3 className="font-medium">接收者</h3>
+                  <h3 className="font-medium">Receiver</h3>
                 </div>
                 {roleStatus.receiver && (
                   <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center">
-                    <Check className="h-3 w-3 mr-1" /> 已注册
+                    <Check className="h-3 w-3 mr-1" /> Registered
                   </span>
                 )}
               </div>
               <p className="text-sm text-gray-500 mb-3">
-                作为接收者，您可以接收物品并完成订单
+                As a receiver, you can receive items and complete orders
               </p>
               <div className="flex space-x-2">
                 {roleStatus.receiver ? (
@@ -316,7 +318,7 @@ export default function Home() {
                     className="flex-1"
                     disabled={registering}
                   >
-                    进入接收者面板
+                    Enter Receiver Panel
                   </Button>
                 ) : (
                   <Button
@@ -324,7 +326,7 @@ export default function Home() {
                     className="flex-1"
                     disabled={registering}
                   >
-                    注册为接收者
+                    Register as Receiver
                   </Button>
                 )}
               </div>
@@ -333,7 +335,7 @@ export default function Home() {
 
           {registering && (
             <p className="text-center text-sm text-gray-500">
-              注册中，请等待交易确认...
+              Registering, please wait for transaction confirmation...
             </p>
           )}
 
