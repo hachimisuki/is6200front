@@ -166,15 +166,6 @@ export default function ReceiverPage() {
       const ratingStr = orderRatings[orderId] || "1";
       const orderRating = ratingMap[ratingStr];
 
-      console.log(
-        "Order ID:",
-        orderId,
-        "Rating option:",
-        ratingStr,
-        "Mapped to enum value:",
-        orderRating
-      );
-
       // Submit the transaction
       const tx = await contract.receiverOrder(orderId, orderRating);
       console.log("Transaction submitted:", tx.hash);

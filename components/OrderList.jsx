@@ -49,7 +49,7 @@ const OrderList = ({ showAll = false, getTakedOrder = false }) => {
       let ordersList = [];
       for (let i = 1; i <= totalOrders.toNumber(); i++) {
         const order = await contract.orderMap(i);
-
+        // sender获取自己的订单
         if (
           // showAll queries all orders || queries orders for the current sender
           !getTakedOrder ||
