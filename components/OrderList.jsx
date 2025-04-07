@@ -16,8 +16,8 @@ import {
   getCourierOrders,
   getAvailableOrders,
 } from "@/components/utils/courier-functions";
-
 const OrderList = ({ showAll = false, getTakedOrder = false }) => {
+  const userView = !showAll && !getTakedOrder;
   const [loading, setLoading] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [orders, setOrders] = useState([]);
@@ -46,7 +46,7 @@ const OrderList = ({ showAll = false, getTakedOrder = false }) => {
       );
       const totalOrders = await contract.totalOrderCount();
       console.log("Total Orders:", totalOrders);
-      const ordersList = [];
+      let ordersList = [];
       for (let i = 1; i <= totalOrders.toNumber(); i++) {
         const order = await contract.orderMap(i);
 
@@ -65,8 +65,11 @@ const OrderList = ({ showAll = false, getTakedOrder = false }) => {
             ethAmount: ethers.utils.formatEther(order.ethAmount),
           });
         }
+        // 查询已接单
         if (getTakedOrder) {
-          // TODO: Query accepted orders
+          console.log("here");
+          const result = await getCourierOrders();
+          ordersList = result.data;
         }
       }
 
@@ -89,12 +92,6 @@ const OrderList = ({ showAll = false, getTakedOrder = false }) => {
   const deliverOk = async (orderId) => {
     await deliverOrder(orderId);
     loadOrders();
-  };
-
-  // Delete order
-  const handleDelete = (id) => {
-    alert(`Delete order #${id}`);
-    // Actual delete logic needs to be implemented
   };
 
   // Edit order
@@ -149,7 +146,9 @@ const OrderList = ({ showAll = false, getTakedOrder = false }) => {
   // Otherwise, show the order list
   return (
     <div>
-      <h2 className="text-lg font-bold mb-4">My Orders</h2>
+      <h2 className="text-lg font-bold mb-4">
+        {showAll ? "Order Market" : "My Orders"}
+      </h2>
 
       {loading ? (
         <p>Loading...</p>
@@ -165,7 +164,9 @@ const OrderList = ({ showAll = false, getTakedOrder = false }) => {
               <th className="p-2 text-left">Receiver Location</th>
               <th className="p-2 text-left">Amount</th>
               <th className="p-2 text-left">Status</th>
-              <th className="p-2 text-left">Actions</th>
+              {(getTakedOrder || showAll) && (
+                <th className="p-2 text-left">Actions</th>
+              )}
             </tr>
           </thead>
           <tbody>
@@ -175,7 +176,7 @@ const OrderList = ({ showAll = false, getTakedOrder = false }) => {
                 <td className="p-2">{order.receiverAddr.slice(0, 6)}...</td>
                 <td className="p-2">{order.senderLoc}</td>
                 <td className="p-2">{order.receiverLoc}</td>
-                <td className="p-2">{order.ethAmount} ETH</td>
+                <td className="p-2">{order.ethAmount} LTK</td>
                 <td className="p-2">
                   {
                     [
@@ -190,7 +191,7 @@ const OrderList = ({ showAll = false, getTakedOrder = false }) => {
                 </td>
                 <td className="p-2">
                   {/* If user */}
-                  {!showAll && (
+                  {/* {!userView && (
                     <>
                       <Button
                         size="sm"
@@ -200,16 +201,8 @@ const OrderList = ({ showAll = false, getTakedOrder = false }) => {
                       >
                         Edit
                       </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => handleDelete(order.id)}
-                        disabled={order.status !== 0}
-                      >
-                        Delete
-                      </Button>
                     </>
-                  )}
+                  )} */}
                   {/* If courier queries all available orders */}
                   {showAll && !getTakedOrder && (
                     <Button
@@ -218,24 +211,26 @@ const OrderList = ({ showAll = false, getTakedOrder = false }) => {
                       className="mr-2"
                       disabled={order.status !== 0}
                     >
-                      Accept Order
+                      Take Order
                     </Button>
                   )}
                   {/* If courier queries accepted orders */}
-                  {true && (
+                  {getTakedOrder && (
                     <>
                       <Button
                         size="sm"
                         onClick={() => startSend(order.id)}
                         className="mr-2"
+                        variant="start"
                         disabled={order.status !== 1}
                       >
                         Start Delivery
                       </Button>
                       <Button
                         size="sm"
+                        variant="delivered"
                         onClick={() => deliverOk(order.id)}
-                        className="mr-2"
+                        className="mr-2 "
                         disabled={order.status !== 2}
                       >
                         Mark as Delivered

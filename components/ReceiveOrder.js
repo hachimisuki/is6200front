@@ -90,7 +90,7 @@ const ReceiveOrder = ({ order, onCompleted }) => {
               Courier: {order.courierAddr.slice(0, 6)}...
               {order.courierAddr.slice(-4)}
             </p>
-            <p className="text-sm">Amount: {order.ethAmount} ETH</p>
+            <p className="text-sm">Amount: {order.ethAmount} LTK</p>
           </div>
 
           <div className="space-y-3">

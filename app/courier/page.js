@@ -56,7 +56,7 @@ export default function CourierPage() {
                   <Truck className="mr-2 h-4 w-4" /> Acceptable Orders
                 </TabsTrigger>
                 <TabsTrigger value="my-order">
-                  <Package className="mr-2 h-4 w-4" /> Received Orders
+                  <Package className="mr-2 h-4 w-4" /> Orders in delivery
                 </TabsTrigger>
               </TabsList>
 

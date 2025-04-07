@@ -161,7 +161,7 @@ const CreateOrder = () => {
         </div>
 
         <div>
-          <label className="block text-sm mb-1">Payment Amount (ETH)</label>
+          <label className="block text-sm mb-1">Payment Amount (LTK)</label>
           <input
             type="text"
             name="ethAmount"

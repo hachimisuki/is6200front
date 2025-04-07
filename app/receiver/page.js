@@ -276,7 +276,7 @@ export default function ReceiverPage() {
                         <p className="text-sm">
                           Delivery Address: {order.receiverLoc}
                         </p>
-                        <p className="text-sm">Amount: {order.ethAmount} ETH</p>
+                        <p className="text-sm">Amount: {order.ethAmount} LTK</p>
                         <p className="text-sm">
                           Status:
                           <span
@@ -350,6 +350,7 @@ export default function ReceiverPage() {
                               loading ||
                               processingOrderId === order.id
                             }
+                            variant="delivered"
                             className="w-full mt-5"
                           >
                             {processingOrderId === order.id
