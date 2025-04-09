@@ -228,7 +228,7 @@ export default function Home() {
                   <Package className="mr-2 h-5 w-5" />
                   <h3 className="font-medium">Sender</h3>
                 </div>
-                {roleStatus.sender && (
+                {false && roleStatus.sender && (
                   <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center">
                     <Check className="h-3 w-3 mr-1" /> Registered
                   </span>
@@ -238,7 +238,7 @@ export default function Home() {
                 As a sender, you can create orders and send items
               </p>
               <div className="flex space-x-2">
-                {roleStatus.sender ? (
+                {true || roleStatus.sender ? (
                   <Button
                     onClick={() => handleEnterRole("sender")}
                     className="flex-1"
@@ -265,7 +265,7 @@ export default function Home() {
                   <Truck className="mr-2 h-5 w-5" />
                   <h3 className="font-medium">Courier</h3>
                 </div>
-                {roleStatus.courier && (
+                {false && roleStatus.courier && (
                   <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center">
                     <Check className="h-3 w-3 mr-1" /> Registered
                   </span>
@@ -275,7 +275,7 @@ export default function Home() {
                 As a courier, you can accept orders and deliver items
               </p>
               <div className="flex space-x-2">
-                {roleStatus.courier ? (
+                {true || roleStatus.courier ? (
                   <Button
                     onClick={() => handleEnterRole("courier")}
                     className="flex-1"
@@ -302,7 +302,7 @@ export default function Home() {
                   <User className="mr-2 h-5 w-5" />
                   <h3 className="font-medium">Receiver</h3>
                 </div>
-                {roleStatus.receiver && (
+                {false && roleStatus.receiver && (
                   <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center">
                     <Check className="h-3 w-3 mr-1" /> Registered
                   </span>
@@ -312,7 +312,7 @@ export default function Home() {
                 As a receiver, you can receive items and complete orders
               </p>
               <div className="flex space-x-2">
-                {roleStatus.receiver ? (
+                {true || roleStatus.receiver ? (
                   <Button
                     onClick={() => handleEnterRole("receiver")}
                     className="flex-1"
