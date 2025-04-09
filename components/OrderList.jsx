@@ -52,8 +52,7 @@ const OrderList = ({ showAll = false, getTakedOrder = false }) => {
         // sender获取自己的订单
         if (
           // showAll queries all orders || queries orders for the current sender
-          !getTakedOrder ||
-          showAll ||
+          userView &&
           order.senderAddr.toLowerCase() === userAddress.toLowerCase()
         ) {
           ordersList.push({
@@ -64,6 +63,11 @@ const OrderList = ({ showAll = false, getTakedOrder = false }) => {
             status: order.status,
             ethAmount: ethers.utils.formatEther(order.ethAmount),
           });
+        }
+        // 外卖员
+        if (showAll) {
+          const result = await getAvailableOrders();
+          ordersList = result.data;
         }
         // 查询已接单
         if (getTakedOrder) {
